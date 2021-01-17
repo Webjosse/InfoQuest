@@ -1,6 +1,45 @@
-[gd_scene load_steps=2 format=2]
+[gd_scene load_steps=3 format=2]
 
+[ext_resource path="res://Scenes/Swipe.tscn" type="PackedScene" id=1]
 [ext_resource path="res://Scripts/Puzzle.gd" type="Script" id=2]
 
 [node name="Puzzle" type="Node2D"]
 script = ExtResource( 2 )
+
+[node name="Swipe" parent="." instance=ExtResource( 1 )]
+
+[node name="Pinterface" type="Control" parent="."]
+margin_top = 504.0
+margin_right = 360.0
+margin_bottom = 640.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Button" type="Button" parent="Pinterface"]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -45.0
+margin_top = -20.0
+margin_right = 45.0
+margin_bottom = 20.0
+text = "Annuler"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="ActionLabel" type="Label" parent="Pinterface"]
+margin_left = 37.0
+margin_top = 50.0034
+margin_right = 106.0
+margin_bottom = 86.0034
+text = "Actions
+3"
+align = 1
+__meta__ = {
+"_edit_use_anchors_": false
+}
+[connection signal="swiped" from="Swipe" to="." method="_on_Swipe_swiped"]
+[connection signal="pressed" from="Pinterface/Button" to="." method="undo"]

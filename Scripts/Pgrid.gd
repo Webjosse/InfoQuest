@@ -12,7 +12,6 @@ func init(w,h,L):
 	self.width = w
 	self.height = h
 	self.figs = L
-	deleteFig(figs)
 
 
 func _ready():
@@ -37,7 +36,7 @@ func _ready():
 	# Met en position les blocs
 	set_pos()
 	# Rechange les couleurs des blocs pour supprimer les figures
-
+	deleteFig(figs)
 
 func fill_pieces():
 
@@ -80,7 +79,7 @@ func changelines():
 			if r == c or randi()%3 != 0:
 				pieces[i][j].color = randi()%6
 
-func deleteFig(list):
+func dleteFig(list):
 	var r;
 	var b = true
 	
@@ -169,7 +168,7 @@ func deleteFig(list):
 			
 		if "O" in list:
 			#Détection
-			var Detected = detectFigure("ZS")
+			var Detected = detectFigure("O")
 			for i in Detected:
 				r = randi()%5
 				if r>pieces[i[0]][i[1]].color:
@@ -182,6 +181,62 @@ func deleteFig(list):
 			if detectFigure(i) != []:
 				b = true
 		print(b)
+
+func deleteFig(list):
+	var b = true
+	var D;
+	var r;
+	var c;
+	var p;
+	var j;
+	while b:
+		for i in list:
+			D = detectFigure(i)
+			if i == "lines" or i == "tee":
+				for d in D:
+					r = randi()%3
+					pieces[d[r][0]][d[r][1]].color = randi()%6
+					pieces[d[r+1][0]][d[r+1][1]].color = randi()%6
+			if i == "ZS":
+				for d in D:
+					c = randi()%5
+					p = d[0]
+					if c >= pieces[p[0]][p[1]].color:
+						c += 1
+					if randi()%2 == 0:
+						pieces[p[0]][p[1]].color = c
+					else:
+						pieces[d[1][0]][d[1][1]].color = c
+			if i == "tee":
+				for d in D:
+					c = randi()%5
+					if c >= pieces[d[0][0]][d[0][1]].color:
+						c += 1
+					for k in range(len(d)):
+						if d[k] == [d[1][0],d[0][1]]:
+							j = k
+					r = randi()%3
+					if r>=j:
+						r += 1
+					pieces[d[r][0]][d[r][1]].color = c
+			if i == "JL":
+				for d in D:
+					c = randi()%5
+					p = d[0]
+					if c >= pieces[p[0]][p[1]].color:
+						c += 1
+					pieces[p[0]][p[1]].color = c
+			if i == "O":
+				for d in D:
+					c = randi()%5
+					if c >= pieces[d[0][0]][d[0][1]].color:
+						c += 1
+					r = randi()%4
+					pieces[d[r][0]][d[r][1]].color = c
+		b = false
+		for i in list:
+			if len(detectFigure(i)) > 0:
+				b = true
 
 # Détection de figures
 func detectFigure(fig):
@@ -198,42 +253,42 @@ func detectFigure(fig):
 				if j<height-2 and [ pieces[i][j+1].color, pieces[i][j+2].color ] == [c,c]:
 					#Lignes: on vérifie le 4e
 					if fig == "lines" and j<height-3 and pieces[i][j+3].color == c:
-						L.append([i,j,false])
+						L.append([[i,j],[i,j+1],[i,j+2],[i,j+3]])
 					if fig == "JL": #J/L: on regarde les adjacents
 						
 						if i<width-1:
 							
 							if pieces[i+1][j].color == c:
-								L.append([i,j,false,1])
+								L.append([[i,j],[i,j+1],[i,j+2],[i+1,j]])
 						
 							if pieces[i+1][j+2].color == c:
-								L.append([i,j,false,3])
+								L.append([[i,j+2],[i,j+1],[i,j],[i+1,j+2]])
 						if i>0:
 							
 							if pieces[i-1][j].color == c:
-								L.append([i,j,false,2])
+								L.append([[i,j],[i,j+1],[i,j+2],[i-1,j]])
 						
 							if pieces[i-1][j+2].color == c:
-								L.append([i,j,false,4])
+								L.append([[i,j+2],[i,j+1],[i,j],[i-1,j+2]])
 				#Vertical
 				if i<width-2 and [ pieces[i+1][j].color, pieces[i+2][j].color ] == [c,c]:
 					#Lignes: on vérifie le 4e
 					if fig == "lines" and i<width-3 and pieces[i+3][j].color == c:
-						L.append([i,j,true])
+						L.append([[i,j],[i+1,j],[i+2,j],[i+3,j]])
 					if fig == "JL": #J/L: on regarde les adjacents
 						
 						if j<height-1:
 							if pieces[i][j+1].color == c:
-								L.append([i,j,true,1])
+								L.append([[i,j],[i+1,j],[i+2,j],[i,j+1]])
 							
 							if pieces[i+2][j+1].color == c:
-								L.append([i,j,true,3])
+								L.append([[i+2,j],[i+1,j],[i,j],[i+2,j+1]])
 						if j>0:
 							if pieces[i][j-1].color == c:
-								L.append([i,j,true,2])
+								L.append([[i,j],[i+1,j],[i+2,j],[i,j-1]])
 							
 							if pieces[i+2][j-1].color == c:
-								L.append([i,j,true,4])
+								L.append([[i+2,j],[i+1,j],[i,j],[i+2,j-1]])
 	if fig == "tee": #Pour les T
 		var sum;
 		
@@ -266,7 +321,7 @@ func detectFigure(fig):
 					dir = 4
 				#On vérifie si y en a 3
 				if sum >= 3:
-					L.append([i,j,dir])
+					L.append([[i+int(dir!=1),j],[i,j+int(dir!=2)],[i-int(dir!=3),j],[i,j-int(dir!=4)]])
 	if fig == "ZS": #Pour les ZS
 		for i in range(width):
 			for j in range(height-1):
@@ -276,23 +331,33 @@ func detectFigure(fig):
 					#Pour fig. 1 et 2
 					if i<width-1 and pieces[i+1][j].color == c:
 						if j>0 and pieces[i+1][j-1].color == c:# fig 1
-							L.append([i,j, 1])
+							L.append([[i,j],[i+1,j],[i,j-1],[i+1,j+1]])
 						if i>0 and pieces[i-1][j+1].color == c:
-							L.append([i,j, 2])
+							L.append([[i,j],[i,j+1],[i-1,j+1],[i+1,j]])
 					#Pour fig 3 et 4
 					if i>0 and pieces[i-1][j].color == c:
 						if j>0 and pieces[i-1][j-1].color == c:
-							L.append([i,j, 3])
+							L.append([[i,j],[i-1,j],[i,j+1],[i-1,j-1]])
 						if width-1>i and pieces[i+1][j+1].color == c:
-							L.append([i,j, 4])
+							L.append([[i,j],[i,j+1],[i-1,j],[i+1,j+1]])
 	if fig == "O":#Carré de 4
 		for i in range(width-1):
 			for j in range(height-1):
 				c = pieces[i][j].color
 				if [pieces[i][j+1].color,pieces[i+1][j].color,pieces[i+1][j+1].color] == [c,c,c]:
-					L.append([i,j])
+					L.append([[i,j],[i+1,j],[i,j+1],[i+1,j+1]])
 	return L
 
-func _on_SwipeDetector_swiped(direction,start):
-	print(direction)
-	print(start)
+func swap(x1,y1,x2,y2):
+	self.lastSwap = [x1,y1,x2,y2]
+	var tempo = pieces[x1][y1]
+	pieces[x1][y1] = pieces[x2][y2]
+	pieces[x2][y2] = tempo
+	set_pos()
+
+var lastSwap = []
+
+func undoSwap():
+	if self.lastSwap != []:
+		swap(lastSwap[0],lastSwap[1],lastSwap[2],lastSwap[3])
+		lastSwap = []
